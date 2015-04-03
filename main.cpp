@@ -18,8 +18,8 @@ int main()
         1,2,3,4,5,6,7,8,9,10,0.5,0.5,0.5,
         1,2,3,4,5,6,7,8,9,10,0.5,0.5,0.5,
         1,2,3,4,5,6,7,8,9,10,0.5,0.5,0.5};
-    int userCard[12] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
-    int compCard[12] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+    int userCard[16] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+    int compCard[16] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
     computer_state(card, userCard, compCard);
     while (true)
     {
@@ -45,15 +45,23 @@ string input_check()
     while (true)
     {
         if (input == "y" || input == "Y" || input == "n" || input == "N") return input;
-        else
-         {cout << "Please enter y or n" << endl; cin >> input;}
+        try{
+            throw input;
+        }
+        catch(string){
+            cout << "Your input is not correct, please enter y or n." << endl;
+            cin >> input;
+        }
     }
 }
 
 void initialization(int arrayA[],int arrayB[])     //restart the game
 {
     for (int i =0;i<12;++i)
-    {arrayA[i] = -1;arrayB[i] = -1;}
+    {
+        arrayA[i] = -1;
+        arrayB[i] = -1;
+    }
 }
 
 int deal(int arrayA[],int arrayB[])      //generate an unused card
@@ -62,9 +70,12 @@ int deal(int arrayA[],int arrayB[])      //generate an unused card
     {
         int arrayNum = rand() % 52,Flag = 0;
         for (int i=0;i<12;++i)
-        {  if (arrayA[i] == arrayNum || arrayB[i] == arrayNum)
-                Flag = 1;}
-        if (Flag == 0) return arrayNum;
+        {
+            if (arrayA[i] == arrayNum || arrayB[i] == arrayNum)
+                Flag = 1;
+        }
+        if (Flag == 0)
+            return arrayNum;
     }
 }
 
@@ -76,10 +87,10 @@ void translate(int array[],double card[])     //show user the card he has
         cardNum = arrayNum % 13 + 1;
         switch (arrayNum / 13)
         {
-            case 0 : cout << "Heart ";break;
-            case 1 : cout << "Spade ";break;
-            case 2 : cout << "Diamond ";break;
-            case 3 : cout << "Club ";break;
+            case 0 : cout << "\nHeart ";break;
+            case 1 : cout << "\nSpade ";break;
+            case 2 : cout << "\nDiamond ";break;
+            case 3 : cout << "\nClub ";break;
         }
         switch (cardNum)
         {
@@ -88,7 +99,6 @@ void translate(int array[],double card[])     //show user the card he has
             case 13 : cout << 'K';break;
             default: cout << cardNum;break;
         }
-        cout << ';';
     }
     cout << endl;
 }
@@ -104,62 +114,56 @@ double player_state(double card[],int arrayA[],int arrayB[])
     while (true)
     {
         if (cardPoint > 21)
-        {cout << "You have losed." << endl;
-            return 0;}     //the user has losed derectly
+            return 0;     //the user has losed derectly
         cout << "Whether do you want another card?(Y/N)" << endl;
         string answer = input_check();
         if (answer == "Y" || answer == "y")
-        {arrayA[i] = deal(arrayA,arrayB);cardPoint += card[arrayA[i]];++i;    //the user pick another card
-         cout << "Given another card: ";
-            translate(arrayA,card);}
-        else return cardPoint;
+        {
+            arrayA[i] = deal(arrayA,arrayB);
+            cardPoint += card[arrayA[i]];
+            ++i;    //the user pick another card
+            arrayA[15] = i;
+            cout << "Given another card: ";
+            translate(arrayA,card);
+        }
+        else
+            return cardPoint;
     }
 }
 
 void computer_state(double card[],int arrayA[],int arrayB[])
 {
-    double cardPointA = player_state(card,arrayA,arrayB);
+    double cardPointA = player_state(card,arrayA,arrayB),cardPointB = 0;
+    int i = 0,numberA = arrayA[15];
     if (cardPointA == 0)
-    {cout << "I win!" << endl;return;}     //case 1: if the player's card number larger than 21, the game ended
-    int i = 0;
+    {
+        cout << "I win!" << endl;
+        return;
+    }     //case 1: if the player's card number larger than 21, the game ended
     for (i = 0;i < 2;++i)
+    {
         arrayB[i] = deal(arrayA,arrayB);
+        cardPointB += card[arrayB[i]];
+    }
     cout << "\nI have got the cards: ";
     translate(arrayB,card);     //initialize
-    double cardPointB = card[arrayB[0]] + card[arrayB[1]];
-    if (cardPointB > 21)
-    {cout << "You win!" << endl;
-        return;}     //case 2: if the computer's card number larger than 21, the game ended
-    while (cardPointB <= cardPointA)
+    while (cardPointB < cardPointA || (cardPointB == cardPointA && i <= numberA))
     {
-        if (cardPointB < cardPointA)
-        {arrayB[i] = deal(arrayA,arrayB);cardPointB += card[arrayB[i]];++i;
-          cout << "Given another card: ";
-            translate(arrayB,card);}    //the computer pick another card
-        else
+        if (cardPointB == 21 && i == numberA)
         {
-            int number = 0;
-            for (int j = 0;arrayA[j] != -1;++j)
-                number +=1;      //calculate the number of user's card
-            if (number > i)
-                {arrayB[i] = deal(arrayA,arrayB);cardPointB += card[arrayB[i]];++i;
-                cout << "Given another card: ";
-                    translate(arrayB,card);}     //the computer pick another card
-            else if (number < i)
-                {cout << "I win!" << endl;return;}     //case 3: with the same points, computer has more cards, the game ended
-            else
-                {
-                    if (cardPointB == 21)
-                    {cout << "It's a win-win!" << endl;return;}    //case 4: we harmoniously ended the game
-                    else
-                    {arrayB[i] = deal(arrayA,arrayB);cardPointB += card[arrayB[i]];++i;
-                            cout << "Given another card: ";
-                            translate(arrayB,card);}     //the computer pick another card
-                }
-        }
-        if (cardPointB > 21)
-        {cout << "You win!" << endl;
-            return;}     //case 2(again): if the computer's card number larger than 21, the game ended
+            cout << "It's a win-win!" << endl;
+            return;
+        }                                   //case 4: we harmoniously ended the game
+        arrayB[i] = deal(arrayA,arrayB);
+        cardPointB += card[arrayB[i]];
+        ++i;
+        cout << "Given another card: ";
+        translate(arrayB,card);               //the computer pick another card
     }
-    cout << "I win!" << endl;return;   //case 5: Finally! The computer has won!!!! TAT
+    if (cardPointB > 21)
+    {
+        cout << "You win!" << endl;
+        return;
+    }                        //case 2(again): if the computer's card number larger than 21, the game ended
+    cout << "I win!" << endl;return;            //case 5: Finally! The computer has won!!!! TAT
 }
