@@ -57,7 +57,7 @@ string input_check()
 
 void initialization(int arrayA[],int arrayB[])     //restart the game
 {
-    for (int i =0;i<12;++i)
+    for (int i =0;i<16;++i)
     {
         arrayA[i] = -1;
         arrayB[i] = -1;
