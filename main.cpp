@@ -94,6 +94,7 @@ void translate(int array[],double card[])     //show user the card he has
         }
         switch (cardNum)
         {
+            case 1 : cout << 'A';break;
             case 11 : cout << 'J';break;
             case 12 : cout << 'Q';break;
             case 13 : cout << 'K';break;
